@@ -2,7 +2,7 @@
   "name": " Movie Bot",
   "description": "A Telegram bot for searching and sharing movies.",
   "keywords": ["telegram", "bot", "python"],
-  "repository": "https://github.com/shivashish44/movies",
+  "repository": "https://github.com/THE-SHIV-OFFICIAL/movie",
   "logo": "https://files.catbox.moe/zgy7zs.jpg",
   "env": {
     "API_ID": {
