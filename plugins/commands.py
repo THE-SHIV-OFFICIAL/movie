@@ -43,14 +43,18 @@ async def invite(client, message):
 async def start(client:Client, message):
     await message.react(emoji=random.choice(REACTIONS), big=True)
     pm_mode = False
+    data = None
     try:
-         data = message.command[1]
-         if data.startswith('pm_mode_'):
-             pm_mode = True
+        if len(message.command) > 1:
+            data = message.command[1]
+            if data.startswith('pm_mode_'):
+                pm_mode = True
     except:
         pass
+        
     m = message
     user_id = m.from_user.id
+    
     if len(m.command) == 2 and m.command[1].startswith('notcopy'):
         _, userid, verify_id, file_id = m.command[1].split("_", 3)
         user_id = int(userid)
@@ -88,7 +92,8 @@ async def start(client:Client, message):
             parse_mode=enums.ParseMode.HTML
         )
         return 
-        # refer 
+        
+    # refer 
     if len(message.command) == 2 and message.command[1].startswith("reff_"):
         try:
             user_id = int(message.command[1].split("_")[1])
@@ -121,7 +126,6 @@ async def start(client:Client, message):
             await client.send_message(user_id, f"𝙔𝙤𝙪 𝙝𝙖𝙫𝙚 𝙨𝙪𝙘𝙘𝙚𝙨𝙨𝙛𝙪𝙡𝙡𝙮 𝙞𝙣𝙫𝙞𝙩𝙚𝙙 {message.from_user.mention}!")
         return
        
-
     if len(message.command) == 2 and message.command[1] in ["ads"]:
         msg, _, impression = await mdb.get_advirtisment()
         user = await db.get_user(message.from_user.id)
@@ -138,15 +142,12 @@ async def start(client:Client, message):
                 reply_markup=reply_markup,
                 parse_mode=enums.ParseMode.HTML
             )
-
             if impression is not None and not seen_ads:
                 await mdb.update_advirtisment_impression(int(impression) - 1)
                 await db.update_value(message.from_user.id, "seen_ads", True)
         else:
             await message.reply("<b>No Ads Found</b>")
-
         await mdb.reset_advertisement_if_expired()
-
         if msg is None and seen_ads:
             await db.update_value(message.from_user.id, "seen_ads", False)
         return
@@ -164,45 +165,84 @@ async def start(client:Client, message):
             await client.send_message(LOG_CHANNEL, script.NEW_GROUP_TXT.format(temp.B_LINK, message.chat.title, message.chat.id, message.chat.username, group_link, total, user))       
             await db.add_chat(message.chat.id, message.chat.title)
         return 
+        
     if not await db.is_user_exist(message.from_user.id):
         await db.add_user(message.from_user.id, message.from_user.first_name)
         await client.send_message(LOG_CHANNEL, script.NEW_USER_TXT.format(temp.B_LINK, message.from_user.id, message.from_user.mention))
         try: 
-            refData = message.command[1]
-            if refData and refData.split("-", 1)[0] == "Jisshu":
-                Fullref = refData.split("-", 1)
-                refUserId = int(Fullref[1])
-                await db.update_point(refUserId)
-                newPoint = await db.get_point(refUserId)
-                if AUTH_CHANNEL and await is_req_subscribed(client, message):
-                        buttons = [[
-                            InlineKeyboardButton('☆ Aᴅᴅ Mᴇ Tᴏ Yᴏᴜʀ Gʀᴏᴜᴘ ☆', url=f'http://t.me/{temp.U_NAME}?startgroup=start')
-                        ],[
-                            InlineKeyboardButton("Hᴇʟᴘ ⚙️", callback_data='admincmd'),
-                            InlineKeyboardButton('Aʙᴏᴜᴛ 💌', callback_data=f'about')
-                        ],[
-                            InlineKeyboardButton('Pʀᴇᴍɪᴜᴍ 🎫', callback_data='seeplans'),
-                            InlineKeyboardButton('Rᴇғᴇʀ ⚜️', callback_data="reffff")
-                        ],[
-                            InlineKeyboardButton('Mᴏsᴛ Sᴇᴀʀᴄʜ 🔍', callback_data="mostsearch"),
-                            InlineKeyboardButton('Tᴏᴘ Tʀᴇɴᴅɪɴɢ ⚡', callback_data="trending")
-                        ]] 
-                        reply_markup = InlineKeyboardMarkup(buttons)
-                        m=await message.reply_sticker("CAACAgQAAxkBAAEn9_ZmGp1uf1a38UrDhitnjOOqL1oG3gAC9hAAAlC74FPEm2DxqNeOmB4E") 
-                        await asyncio.sleep(1)
-                        await m.delete()
-                        await message.reply_photo(photo=random.choice(START_IMG), caption=script.START_TXT.format(message.from_user.mention, get_status(), message.from_user.id),
-                            reply_markup=reply_markup,
-                            parse_mode=enums.ParseMode.HTML)
-                try: 
-                    if newPoint == 0:
-                        await client.send_message(refUserId , script.REF_PREMEUM.format(PREMIUM_POINT))
-                    else: 
-                        await client.send_message(refUserId , script.REF_START.format(message.from_user.mention() , newPoint))
-                except : pass
+            if len(message.command) > 1: # ADDED SAFETY CHECK HERE
+                refData = message.command[1]
+                if refData and refData.split("-", 1)[0] == "Jisshu":
+                    Fullref = refData.split("-", 1)
+                    refUserId = int(Fullref[1])
+                    await db.update_point(refUserId)
+                    newPoint = await db.get_point(refUserId)
+                    if AUTH_CHANNEL and await is_req_subscribed(client, message):
+                            buttons = [[
+                                InlineKeyboardButton('☆ Aᴅᴅ Mᴇ Tᴏ Yᴏᴜʀ Gʀᴏᴜᴘ ☆', url=f'http://t.me/{temp.U_NAME}?startgroup=start')
+                            ],[
+                                InlineKeyboardButton("Hᴇʟᴘ ⚙️", callback_data='admincmd'),
+                                InlineKeyboardButton('Aʙᴏᴜᴛ 💌', callback_data=f'about')
+                            ],[
+                                InlineKeyboardButton('Pʀᴇᴍɪᴜᴍ 🎫', callback_data='seeplans'),
+                                InlineKeyboardButton('Rᴇғᴇʀ ⚜️', callback_data="reffff")
+                            ],[
+                                InlineKeyboardButton('Mᴏsᴛ Sᴇᴀʀᴄʜ 🔍', callback_data="mostsearch"),
+                                InlineKeyboardButton('Tᴏᴘ Tʀᴇɴᴅɪɴɢ ⚡', callback_data="trending")
+                            ]] 
+                            reply_markup = InlineKeyboardMarkup(buttons)
+                            m=await message.reply_sticker("CAACAgQAAxkBAAEn9_ZmGp1uf1a38UrDhitnjOOqL1oG3gAC9hAAAlC74FPEm2DxqNeOmB4E") 
+                            await asyncio.sleep(1)
+                            await m.delete()
+                            await message.reply_photo(photo=random.choice(START_IMG), caption=script.START_TXT.format(message.from_user.mention, get_status(), message.from_user.id),
+                                reply_markup=reply_markup,
+                                parse_mode=enums.ParseMode.HTML)
+                    try: 
+                        if newPoint == 0:
+                            await client.send_message(refUserId , script.REF_PREMEUM.format(PREMIUM_POINT))
+                        else: 
+                            await client.send_message(refUserId , script.REF_START.format(message.from_user.mention() , newPoint))
+                    except: 
+                        pass
         except Exception as e:
             traceback.print_exc()
             pass
+
+    # FIXED: Moved Force Subscribe Check up here so users cannot bypass it
+    if AUTH_CHANNEL and not await is_req_subscribed(client, message):
+        try:
+            invite_link = await client.create_chat_invite_link(int(AUTH_CHANNEL), creates_join_request=True)
+        except ChatAdminRequired:
+            logger.error("Make Sure Bot Is Admin In Forcesub Channel")
+            return
+        btn = [[
+            InlineKeyboardButton("🎗️ ᴊᴏɪɴ ɴᴏᴡ 🎗️", url=invite_link.invite_link)
+        ]]
+
+        if len(message.command) > 1 and message.command[1] != "subscribe": # ADDED SAFETY CHECK HERE
+            try:
+                chksub_data = message.command[1].replace('pm_mode_', '') if pm_mode else message.command[1]
+                kk, grp_id, file_id = chksub_data.split('_', 2)
+                pre = 'checksubp' if kk == 'filep' else 'checksub'
+                btn.append(
+                    [InlineKeyboardButton("♻️ ᴛʀʏ ᴀɢᴀɪɴ ♻️", callback_data=f"checksub#{file_id}#{int(grp_id)}")]
+                )
+            except (IndexError, ValueError):
+                print('IndexError: ', IndexError)
+                btn.append(
+                    [InlineKeyboardButton("♻️ ᴛʀʏ ᴀɢᴀɪɴ ♻️", url=f"https://t.me/{temp.U_NAME}?start={message.command[1]}")]
+                )
+        reply_markup=InlineKeyboardMarkup(btn)
+        await client.send_photo(
+            chat_id=message.from_user.id,
+            photo=FORCESUB_IMG, 
+            caption=script.FORCESUB_TEXT,
+            reply_markup=reply_markup,
+            parse_mode=enums.ParseMode.HTML
+        )
+        return
+
+    # Normal /start processing below
     if len(message.command) != 2:
         buttons = [[
                             InlineKeyboardButton('☆ Aᴅᴅ Mᴇ Tᴏ Yᴏᴜʀ Gʀᴏᴜᴘ ☆', url=f'http://t.me/{temp.U_NAME}?startgroup=start')
@@ -225,45 +265,6 @@ async def start(client:Client, message):
             parse_mode=enums.ParseMode.HTML
         )
         return
-    if AUTH_CHANNEL and not await is_req_subscribed(client, message):
-        try:
-            invite_link = await client.create_chat_invite_link(int(AUTH_CHANNEL), creates_join_request=True)
-        except ChatAdminRequired:
-            logger.error("Make Sure Bot Is Admin In Forcesub Channel")
-            return
-        btn = [[
-            InlineKeyboardButton("🎗️ ᴊᴏɪɴ ɴᴏᴡ 🎗️", url=invite_link.invite_link)
-        ]]
-
-        if message.command[1] != "subscribe":
-            
-            try:
-                chksub_data = message.command[1].replace('pm_mode_', '') if pm_mode else message.command[1]
-                kk, grp_id, file_id = chksub_data.split('_', 2)
-                pre = 'checksubp' if kk == 'filep' else 'checksub'
-                btn.append(
-                    [InlineKeyboardButton("♻️ ᴛʀʏ ᴀɢᴀɪɴ ♻️", callback_data=f"checksub#{file_id}#{int(grp_id)}")]
-                )
-            except (IndexError, ValueError):
-                print('IndexError: ', IndexError)
-                btn.append(
-                    [InlineKeyboardButton("♻️ ᴛʀʏ ᴀɢᴀɪɴ ♻️", url=f"https://t.me/{temp.U_NAME}?start={message.command[1]}")]
-                )
-        reply_markup=InlineKeyboardMarkup(btn)
-        await client.send_photo(
-            chat_id=message.from_user.id,
-            photo=FORCESUB_IMG, 
-            caption=script.FORCESUB_TEXT,
-            reply_markup=reply_markup,
-            parse_mode=enums.ParseMode.HTML
-        )
-       # await client.send_message(
-       #     chat_id=message.from_user.id,
-       #     text="<b>🙁 ғɪʀꜱᴛ ᴊᴏɪɴ ᴏᴜʀ ʙᴀᴄᴋᴜᴘ ᴄʜᴀɴɴᴇʟ ᴛʜᴇɴ ʏᴏᴜ ᴡɪʟʟ ɢᴇᴛ ᴍᴏᴠɪᴇ, ᴏᴛʜᴇʀᴡɪꜱᴇ ʏᴏᴜ ᴡɪʟʟ ɴᴏᴛ ɢᴇᴛ ɪᴛ.\n\nᴄʟɪᴄᴋ ᴊᴏɪɴ ɴᴏᴡ ʙᴜᴛᴛᴏɴ 👇</b>",
-       #     reply_markup=InlineKeyboardMarkup(btn),
-       #     parse_mode=enums.ParseMode.HTML
-    #    )
-        return
 
     if len(message.command) == 2 and message.command[1] in ["subscribe", "error", "okay", "help"]:
         buttons = [[
@@ -279,12 +280,12 @@ async def start(client:Client, message):
                             InlineKeyboardButton('Tᴏᴘ Tʀᴇɴᴅɪɴɢ ⚡', callback_data="trending")
                         ]] 
         reply_markup = InlineKeyboardMarkup(buttons)
-        return await message.reply_photo(photo=START_IMG, caption=script.START_TXT.format(message.from_user.mention, get_status(), message.from_user.id),
+        return await message.reply_photo(photo=random.choice(START_IMG), caption=script.START_TXT.format(message.from_user.mention, get_status(), message.from_user.id),
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
         )
         
-    if data.startswith('pm_mode_'):
+    if data and data.startswith('pm_mode_'):
         pm_mode = True
         data = data.replace('pm_mode_', '')
     try:
@@ -371,7 +372,7 @@ async def start(client:Client, message):
     if not data:
         return
 
-    files_ = await get_file_details(file_id)           
+    files_ = await get_file_details(file_id)            
     if not files_:
         pre, file_id = ((base64.urlsafe_b64decode(data + "=" * (-len(data) % 4))).decode("ascii")).split("_", 1)
         return await message.reply('<b>⚠️ ᴀʟʟ ꜰɪʟᴇs ɴᴏᴛ ꜰᴏᴜɴᴅ ⚠️</b>')
@@ -631,7 +632,7 @@ async def delete_files(bot, message):
         return
     chat_type = message.chat.type
     if chat_type != enums.ChatType.PRIVATE:
-        return await message.reply_text(f"<b>Hey {message.from_user.mention}, this command won't work in groups. It only works on my PM!</b>")    
+        return await message.reply_text(f"<b>Hey {message.from_user.mention}, this command won't work in groups. It only works on my PM!</b>")   
     try:
         keywords = message.text.split(" ", 1)[1].split(",")
     except IndexError:
@@ -821,8 +822,8 @@ async def set_log(client, message):
         return await message.reply_text(f'<b><u>😐 ᴍᴀᴋᴇ sᴜʀᴇ ᴛʜɪs ʙᴏᴛ ᴀᴅᴍɪɴ ɪɴ ᴛʜᴀᴛ ᴄʜᴀɴɴᴇʟ...</u>\n\n💔 ᴇʀʀᴏʀ - <code>{e}</code></b>')
     await save_group_settings(grp_id, 'log', log)
     await message.reply_text(f"<b>✅ sᴜᴄᴄᴇssꜰᴜʟʟʏ sᴇᴛ ʏᴏᴜʀ ʟᴏɢ ᴄʜᴀɴɴᴇʟ ꜰᴏʀ {title}\n\nɪᴅ `{log}`</b>", disable_web_page_preview=True)
-    user_id = m.from_user.id
-    user_info = f"@{m.from_user.username}" if m.from_user.username else f"{m.from_user.mention}"
+    user_id = message.from_user.id
+    user_info = f"@{message.from_user.username}" if message.from_user.username else f"{message.from_user.mention}"
     link = (await client.get_chat(message.chat.id)).invite_link
     grp_link = f"[{message.chat.title}]({link})"
     log_message = f"#New_Log_Channel_Set\n\nName - {user_info}\nId - `{user_id}`\n\nLog channel id - `{log}`\nGroup link - {grp_link}"
@@ -935,7 +936,7 @@ async def most(client, callback_query):
             else:
                 truncated_messages.append(msg)
 
-   
+    
     keyboard = [truncated_messages[i:i+2] for i in range(0, len(truncated_messages), 2)]
     
     reply_markup = ReplyKeyboardMarkup(
@@ -1026,7 +1027,7 @@ async def verifyoff(bot, message):
         return await message.reply_text("This command only works in groups!")
     
     grpid = message.chat.id
-    if not await is_check_admin(bot, grpid, message.from_user.id):  # Changed client to bot
+    if not await is_check_admin(bot, grpid, message.from_user.id):  
         return await message.reply_text('<b>You are not an admin in this group!</b>')
     
     try:
@@ -1053,7 +1054,7 @@ async def verifyon(bot, message):
     else:
         return
     
-    if not await is_check_admin(bot, grpid, message.from_user.id):  # Changed client to bot
+    if not await is_check_admin(bot, grpid, message.from_user.id):  
         return await message.reply_text('<b>You are not an admin in this group!</b>')
     
     await save_group_settings(grpid, 'is_verify', True)
