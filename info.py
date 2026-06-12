@@ -27,7 +27,7 @@ BOT_TOKEN = environ.get('BOT_TOKEN', '7807I9ygow9sLqNQuI7hsWPm5FLNfBr9c')
 # --- Admin & Channels ---
 ADMINS = [int(admin) if id_pattern.search(admin.strip()) else admin.strip() for admin in environ.get('ADMINS', '8418584090').split()]
 USERNAME = environ.get('USERNAME', "https://t.me/betabot_hub")
-LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1003812209413'))
+LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1002155804090'))
 MOVIE_GROUP_LINK = environ.get('MOVIE_GROUP_LINK', 'https://t.me/+sLEVq3pYIiBiNGI9')
 CHANNELS = [int(ch) if id_pattern.search(ch.strip()) else ch.strip() for ch in environ.get('CHANNELS', '-1003812209413').split()]
 
